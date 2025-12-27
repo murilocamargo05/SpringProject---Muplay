@@ -3,9 +3,13 @@ package br.com.muplay.screenmatch.principal;
 import br.com.muplay.screenmatch.model.DadosEpisodio;
 import br.com.muplay.screenmatch.model.DadosSerie;
 import br.com.muplay.screenmatch.model.DadosTemporada;
+import br.com.muplay.screenmatch.model.Episodio;
 import br.com.muplay.screenmatch.services.ConsumoAPI;
 import br.com.muplay.screenmatch.services.ConverteDados;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -64,6 +68,28 @@ public class Principal {
                 .limit(5)
                 .forEach(System.out::println);
 
+        List<Episodio> episodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .map(d -> new Episodio(t.num(), d))
+                )//.filter(e -> !e.getTitulo().equalsIgnoreCase("N/A"))
+                .collect(Collectors.toList());
+
+        episodios.forEach(System.out::println);
+
+        System.out.println("A partir de que ano você deseja ver os episódios?");
+        var ano = scanner.nextInt();
+        scanner.nextLine();
+
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate dataBusca = LocalDate.of(ano, 1,1);
+
+        episodios.stream()
+                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e-> System.out.println(
+                        "Temporada: " + e.getTemporada()+
+                                "Episódio: " + e.getTitulo()+
+                                "Data Lançamento: " + e.getDataLancamento().format(formatador)
+                ));
 
     }
 }
